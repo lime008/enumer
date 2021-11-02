@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+//go:build go1.5
 // +build go1.5
 
 //Enumer is a tool to generate Go code that adds useful methods to Go enums (constants with a specific type).
@@ -20,13 +21,14 @@ import (
 	"go/importer"
 	"go/token"
 	"go/types"
-	"golang.org/x/tools/go/packages"
 	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
 	"sort"
 	"strings"
+
+	"golang.org/x/tools/go/packages"
 
 	"github.com/pascaldekloe/name"
 )
@@ -311,9 +313,14 @@ func (pkg *Package) check(fs *token.FileSet, astFiles []*ast.File) {
 
 func (g *Generator) transformValueNames(values []Value, transformMethod string) {
 	var sep rune
+	var upperCase bool
+
 	switch transformMethod {
 	case "snake":
 		sep = '_'
+	case "capital-snake":
+		sep = '_'
+		upperCase = true
 	case "kebab":
 		sep = '-'
 	default:
@@ -321,7 +328,11 @@ func (g *Generator) transformValueNames(values []Value, transformMethod string) 
 	}
 
 	for i := range values {
-		values[i].name = strings.ToLower(name.Delimit(values[i].name, sep))
+		valName := strings.ToLower(name.Delimit(values[i].name, sep))
+		if upperCase {
+			valName = strings.ToUpper(valName)
+		}
+		values[i].name = valName
 	}
 }
 
