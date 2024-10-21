@@ -21,7 +21,6 @@ import (
 	"go/importer"
 	"go/token"
 	"go/types"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -51,7 +50,7 @@ var (
 	yaml            = flag.Bool("yaml", false, "if true, yaml marshaling methods will be generated. Default: false")
 	text            = flag.Bool("text", false, "if true, text marshaling methods will be generated. Default: false")
 	output          = flag.String("output", "", "output file name; default srcdir/<type>_enumer.go")
-	transformMethod = flag.String("transform", "noop", "enum item name transformation method. Accepted values: camel, snake, screaming-snake Default: noop")
+	transformMethod = flag.String("transform", "noop", "enum item name transformation method. Accepted values: camel, snake, constant Default: noop")
 	trimPrefix      = flag.String("trimprefix", "", "transform each item name by removing a prefix. Default: \"\"")
 	lineComment     = flag.Bool("linecomment", false, "use line comment text as printed text when present")
 )
@@ -138,7 +137,7 @@ func main() {
 
 	// Write to tmpfile first
 	tmpName := fmt.Sprintf("%s_enumer_", filepath.Base(types[0]))
-	tmpFile, err := ioutil.TempFile(filepath.Dir(types[0]), tmpName)
+	tmpFile, err := os.CreateTemp(filepath.Dir(types[0]), tmpName)
 	if err != nil {
 		log.Fatalf("creating temporary file for output: %s", err)
 	}
@@ -318,7 +317,7 @@ func (g *Generator) transformValueNames(values []Value, transformMethod string) 
 	switch transformMethod {
 	case "snake":
 		sep = '_'
-	case "screaming-snake":
+	case "constant":
 		sep = '_'
 		upperCase = true
 	case "kebab":
